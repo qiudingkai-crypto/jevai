@@ -2,9 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { WaffoPancake, WaffoPancakeError } from "@waffo/pancake-ts";
 
+const rawKey = process.env.WAFFO_PRIVATE_KEY!.trim();
+const privateKey = rawKey.includes("BEGIN")
+  ? rawKey
+  : `-----BEGIN PRIVATE KEY-----\n${rawKey.match(/.{1,64}/g)?.join("\n")}\n-----END PRIVATE KEY-----`;
+
 const client = new WaffoPancake({
   merchantId: process.env.WAFFO_MERCHANT_ID!,
-  privateKey: process.env.WAFFO_PRIVATE_KEY!,
+  privateKey,
 });
 
 export async function POST(req: NextRequest) {
