@@ -362,7 +362,7 @@ export default function Playground() {
             <button className="btn btn-ghost" onClick={reset}>Reset</button>
             {isAuthed && remaining !== null && (
               <span style={{ marginLeft: "auto", fontSize: "0.82rem", color: "var(--muted)" }}>
-                {remaining} free {remaining === 1 ? "run" : "runs"} left
+                {remaining === -1 ? "Pro · unlimited runs" : `${remaining} free ${remaining === 1 ? "run" : "runs"} left`}
               </span>
             )}
           </div>

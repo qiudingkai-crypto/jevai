@@ -174,7 +174,7 @@ export default function PricingPage() {
             Jev is an independent playground for the TypeSafe Jev model. Not
             affiliated with TypeSafe.
           </span>
-          <span>Built for decisions. Still review the hard ones.</span>
+          <span><a href="/terms" style={{ color: "var(--muted)" }}>Terms</a> ·{" "}<a href="/privacy" style={{ color: "var(--muted)" }}>Privacy</a></span>
         </div>
       </footer>
     </>

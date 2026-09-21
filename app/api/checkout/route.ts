@@ -7,6 +7,10 @@ const client = new WaffoPancake({
   privateKey: process.env.WAFFO_PRIVATE_KEY!,
 });
 
+const ALLOWED_PRODUCT_IDS = [
+  "PROD_0QcN4J6nShFWox3sFiuyFY", // Creator $9.90/year
+];
+
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
@@ -19,6 +23,10 @@ export async function POST(req: NextRequest) {
 
     if (!productId) {
       return NextResponse.json({ error: "productId is required" }, { status: 400 });
+    }
+
+    if (!ALLOWED_PRODUCT_IDS.includes(productId)) {
+      return NextResponse.json({ error: "Invalid product" }, { status: 400 });
     }
 
     const checkoutSession = await client.checkout.createSession({

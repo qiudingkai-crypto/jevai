@@ -403,7 +403,7 @@ export const FAQS: [string, string][] = [
   ],
   [
     "How much does it cost?",
-    "Start free with 5 runs. A paid plan with unlimited runs and saved scenarios is coming soon — pricing will be posted here when it launches.",
+    "Start free with 5 runs. Upgrade to Pro for unlimited runs — Creator $9.90/year, Studio $29.90/year, or Max $49.90/year. See our Pricing page for details.",
   ],
   [
     "Can Jev read images or PDFs?",

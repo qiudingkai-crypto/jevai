@@ -582,7 +582,7 @@ h4 {
 }
 .panel textarea {
   width: 100%;
-  min-height: 140px;
+  min-height: 200px;
   padding: 12px 13px;
   border: 1px solid var(--rule);
   border-radius: var(--r-md);

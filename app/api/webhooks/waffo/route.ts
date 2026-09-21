@@ -32,11 +32,23 @@ export async function POST(request: Request) {
         break;
 
       case WebhookEventType.SubscriptionCanceled:
-        console.log(`[Waffo] Subscription canceled: ${event.data.orderId}`);
+        console.log(`[Waffo] Subscription canceled: ${event.data.buyerEmail}`);
+        if (event.data.buyerEmail) {
+          await prisma.user.updateMany({
+            where: { email: event.data.buyerEmail },
+            data: { plan: "free" },
+          });
+        }
         break;
 
       case WebhookEventType.RefundSucceeded:
         console.log(`[Waffo] Refund: ${event.data.amount} ${event.data.currency}`);
+        if (event.data.buyerEmail) {
+          await prisma.user.updateMany({
+            where: { email: event.data.buyerEmail },
+            data: { plan: "free" },
+          });
+        }
         break;
 
       default:
