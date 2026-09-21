@@ -10,7 +10,6 @@ const privateKey = rawKey.includes("BEGIN")
 const client = new WaffoPancake({
   merchantId: process.env.WAFFO_MERCHANT_ID!,
   privateKey,
-  environment: "test",
 });
 
 export async function POST(req: NextRequest) {
@@ -41,9 +40,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ checkoutUrl: checkoutSession.checkoutUrl });
   } catch (error) {
     if (error instanceof WaffoPancakeError) {
+      console.error("[Checkout] Waffo error:", error.status, JSON.stringify(error.errors));
       return NextResponse.json({ error: error.errors?.[0]?.message || "Checkout failed" }, { status: error.status || 500 });
     }
-    console.error("Checkout error:", error);
+    console.error("[Checkout] Unexpected error:", error);
     return NextResponse.json({ error: "Failed to create checkout session" }, { status: 500 });
   }
 }
