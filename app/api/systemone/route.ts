@@ -63,7 +63,7 @@ export async function POST(request: Request) {
   const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
 
   try {
-    const res = await fetch("https://jev-ai.pro/api/v1/systemone", {
+    const res = await fetch("https://api.typesafe.ai/v1/systemone", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
