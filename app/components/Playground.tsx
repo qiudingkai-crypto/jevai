@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { SCENARIOS, ICON_PATHS, type QuestionDef } from "@/lib/scenarios";
 import { signIn, useSession } from "next-auth/react";
 
@@ -147,6 +147,14 @@ export default function Playground() {
   const [running, setRunning] = useState(false);
   const [answers, setAnswers] = useState<RunResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [remaining, setRemaining] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!isAuthed) { setRemaining(null); return; }
+    fetch("/api/usage").then(r => r.json()).then(d => {
+      if (d.authed) setRemaining(d.remaining);
+    }).catch(() => {});
+  }, [isAuthed]);
 
   const scenario = SCENARIOS[activeIdx];
 
@@ -221,6 +229,9 @@ export default function Playground() {
         setError(data.error || `Request failed (${res.status})`);
       } else {
         setAnswers(data);
+        fetch("/api/usage").then(r => r.json()).then(d => {
+          if (d.authed) setRemaining(d.remaining);
+        }).catch(() => {});
       }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Network error");
@@ -339,6 +350,11 @@ export default function Playground() {
               {running ? "Running…" : "Run Jev"}
             </button>
             <button className="btn btn-ghost" onClick={reset}>Reset</button>
+            {isAuthed && remaining !== null && (
+              <span style={{ marginLeft: "auto", fontSize: "0.82rem", color: "var(--muted)" }}>
+                {remaining} free {remaining === 1 ? "run" : "runs"} left
+              </span>
+            )}
           </div>
         </div>
 
