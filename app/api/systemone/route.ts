@@ -3,6 +3,8 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
 const FREE_RUNS = 5;
+const MAX_TEXT_LEN = 8000;
+const UPSTREAM_TIMEOUT_MS = 30_000;
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -16,7 +18,7 @@ export async function POST(request: Request) {
   const runCount = await prisma.usageRun.count({ where: { userId } });
   if (runCount >= FREE_RUNS) {
     return NextResponse.json(
-      { error: `You've used all ${FREE_RUNS} free runs. Subscribe to continue.` },
+      { error: `You've used all ${FREE_RUNS} free runs. Subscribe to continue.`, code: "FREE_RUNS_EXHAUSTED" },
       { status: 403 }
     );
   }
@@ -29,7 +31,36 @@ export async function POST(request: Request) {
     );
   }
 
-  const body = await request.json();
+  // Validate request body
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+  }
+
+  const b = body as Record<string, unknown>;
+  const state = typeof b.state === "string" ? b.state.trim() : "";
+  if (!state) {
+    return NextResponse.json({ error: "Please enter some text to analyze." }, { status: 400 });
+  }
+  if (state.length > MAX_TEXT_LEN) {
+    return NextResponse.json({ error: `Text too long. Max ${MAX_TEXT_LEN} characters.` }, { status: 400 });
+  }
+  if (!b.questions || typeof b.questions !== "object") {
+    return NextResponse.json({ error: "No questions defined." }, { status: 400 });
+  }
+
+  // Build sanitized request
+  const upstreamBody = {
+    state,
+    model: typeof b.model === "string" ? b.model : "jev-latest",
+    questions: b.questions,
+  };
+
+  // Call upstream with timeout
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
 
   try {
     const res = await fetch("https://jev-ai.pro/api/v1/systemone", {
@@ -38,7 +69,8 @@ export async function POST(request: Request) {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(upstreamBody),
+      signal: controller.signal,
     });
 
     const data = await res.json();
@@ -47,8 +79,8 @@ export async function POST(request: Request) {
     await prisma.usageRun.create({
       data: {
         userId,
-        scenario: body.state?.slice(0, 100) || "unknown",
-        stateLen: (body.state || "").length,
+        scenario: state.slice(0, 100),
+        stateLen: state.length,
         inputTokens: data.usage?.input_tokens ?? null,
         outputTokens: data.usage?.output_tokens ?? null,
       },
@@ -56,7 +88,12 @@ export async function POST(request: Request) {
 
     return NextResponse.json(data, { status: res.status });
   } catch (err: unknown) {
+    if (err instanceof Error && err.name === "AbortError") {
+      return NextResponse.json({ error: "The model took too long to respond. Please try again." }, { status: 504 });
+    }
     const message = err instanceof Error ? err.message : "Upstream error";
     return NextResponse.json({ error: message }, { status: 502 });
+  } finally {
+    clearTimeout(timeout);
   }
 }

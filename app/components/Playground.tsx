@@ -148,6 +148,7 @@ export default function Playground() {
   const [answers, setAnswers] = useState<RunResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [remaining, setRemaining] = useState<number | null>(null);
+  const [exhausted, setExhausted] = useState(false);
 
   useEffect(() => {
     if (!isAuthed) { setRemaining(null); return; }
@@ -215,17 +216,26 @@ export default function Playground() {
       signIn("google");
       return;
     }
+    if (!text.trim()) {
+      setError("Please enter some text to analyze.");
+      return;
+    }
     setRunning(true);
     setError(null);
     setAnswers(null);
+    setExhausted(false);
     try {
       const res = await fetch("/api/systemone", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(buildRequest()),
       });
-      const data: RunResponse = await res.json();
+      const data: RunResponse & { code?: string } = await res.json();
       if (!res.ok || data.error) {
+        if (data.code === "FREE_RUNS_EXHAUSTED") {
+          setExhausted(true);
+          setRemaining(0);
+        }
         setError(data.error || `Request failed (${res.status})`);
       } else {
         setAnswers(data);
@@ -367,7 +377,18 @@ export default function Playground() {
             </span>
           </div>
           <div className="ans-list">
-            {error && (
+            {exhausted && (
+              <div className="ans-card" style={{ textAlign: "center", padding: "32px 20px" }}>
+                <div style={{ fontSize: "1.2rem", fontWeight: 700, marginBottom: 8 }}>You've used all 5 free runs</div>
+                <p style={{ color: "var(--muted)", fontSize: "0.9rem", marginBottom: 16 }}>
+                  Upgrade to Pro for unlimited runs and saved history.
+                </p>
+                <a href="/pricing" className="btn btn-primary" style={{ display: "inline-block", textDecoration: "none" }}>
+                  View pricing
+                </a>
+              </div>
+            )}
+            {error && !exhausted && (
               <div className="ans-card" style={{ color: "var(--danger)" }}>
                 Error: {error}
               </div>
