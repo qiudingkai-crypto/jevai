@@ -1,0 +1,43 @@
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
+import { WaffoPancake, WaffoPancakeError } from "@waffo/pancake-ts";
+
+const client = new WaffoPancake({
+  merchantId: process.env.WAFFO_MERCHANT_ID!,
+  privateKey: process.env.WAFFO_PRIVATE_KEY!,
+});
+
+export async function POST(req: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Please sign in first." }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { productId } = body;
+
+    if (!productId) {
+      return NextResponse.json({ error: "productId is required" }, { status: 400 });
+    }
+
+    const checkoutSession = await client.checkout.createSession({
+      productId,
+      currency: "USD",
+      buyerEmail: session.user.email,
+      successUrl: `${process.env.NEXT_PUBLIC_APP_URL || "https://jev-ai.xyz"}/success`,
+      metadata: {
+        userId: session.user.id || "",
+        email: session.user.email,
+      },
+    });
+
+    return NextResponse.json({ checkoutUrl: checkoutSession.checkoutUrl });
+  } catch (error) {
+    if (error instanceof WaffoPancakeError) {
+      return NextResponse.json({ error: error.errors?.[0]?.message || "Checkout failed" }, { status: error.status || 500 });
+    }
+    console.error("Checkout error:", error);
+    return NextResponse.json({ error: "Failed to create checkout session" }, { status: 500 });
+  }
+}

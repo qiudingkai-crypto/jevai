@@ -1,10 +1,10 @@
-import type { Metadata } from "next";
-import Link from "next/link";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Pricing — Jev Verdict",
-  description: "Start free with 5 runs. Pro plan coming soon.",
-};
+import { useState } from "react";
+import Link from "next/link";
+import { signIn, useSession } from "next-auth/react";
+
+const PRO_PRODUCT_ID = "PROD_0QcN4J6nShFWox3sFiuyFY";
 
 function BrandMark() {
   return (
@@ -25,6 +25,34 @@ function CheckIcon() {
 }
 
 export default function PricingPage() {
+  const { data: session } = useSession();
+  const [loading, setLoading] = useState(false);
+
+  async function handleCheckout() {
+    if (!session?.user) {
+      signIn("google");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId: PRO_PRODUCT_ID }),
+      });
+      const data = await res.json();
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      } else {
+        alert(data.error || "Failed to create checkout");
+      }
+    } catch {
+      alert("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <>
       <header className="topbar">
@@ -40,9 +68,6 @@ export default function PricingPage() {
             <Link href="/#faq">FAQ</Link>
           </nav>
           <div className="topbar-cta">
-            <Link className="btn btn-ghost btn-sm" href="/">
-              Sign in
-            </Link>
             <Link className="btn btn-primary btn-sm" href="/#playground">
               Try Jev free
             </Link>
@@ -80,7 +105,7 @@ export default function PricingPage() {
               <div className="price-card hl">
                 <div className="tier">Pro</div>
                 <div className="price">
-                  Pro <small>· coming soon</small>
+                  $9.90 <small>/ year</small>
                 </div>
                 <p style={{ color: "var(--muted)", fontSize: "0.88rem" }}>
                   For people who need more than the free tier.
@@ -90,9 +115,14 @@ export default function PricingPage() {
                   <li><CheckIcon /> Saved scenarios &amp; history</li>
                   <li><CheckIcon /> Priority support</li>
                 </ul>
-                <Link className="btn btn-primary" href="/#playground" style={{ width: "100%" }}>
-                  Start building
-                </Link>
+                <button
+                  className="btn btn-primary"
+                  onClick={handleCheckout}
+                  disabled={loading}
+                  style={{ width: "100%" }}
+                >
+                  {loading ? "Redirecting…" : "Upgrade to Pro"}
+                </button>
               </div>
             </div>
           </div>
