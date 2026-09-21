@@ -75,16 +75,18 @@ export async function POST(request: Request) {
 
     const data = await res.json();
 
-    // Record usage
-    await prisma.usageRun.create({
-      data: {
-        userId,
-        scenario: state.slice(0, 100),
-        stateLen: state.length,
-        inputTokens: data.usage?.input_tokens ?? null,
-        outputTokens: data.usage?.output_tokens ?? null,
-      },
-    });
+    // Record usage only on successful upstream call
+    if (res.ok) {
+      await prisma.usageRun.create({
+        data: {
+          userId,
+          scenario: state.slice(0, 100),
+          stateLen: state.length,
+          inputTokens: data.usage?.input_tokens ?? null,
+          outputTokens: data.usage?.output_tokens ?? null,
+        },
+      });
+    }
 
     return NextResponse.json(data, { status: res.status });
   } catch (err: unknown) {
