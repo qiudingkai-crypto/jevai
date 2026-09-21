@@ -14,9 +14,13 @@ export async function POST(request: Request) {
 
   const userId = session.user.id;
 
+  // Check user plan
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  const isPro = user?.plan === "pro";
+
   // Count existing runs
   const runCount = await prisma.usageRun.count({ where: { userId } });
-  if (runCount >= FREE_RUNS) {
+  if (!isPro && runCount >= FREE_RUNS) {
     return NextResponse.json(
       { error: `You've used all ${FREE_RUNS} free runs. Subscribe to continue.`, code: "FREE_RUNS_EXHAUSTED" },
       { status: 403 }
