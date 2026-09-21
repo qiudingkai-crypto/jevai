@@ -1186,3 +1186,54 @@ footer {
     transition: none !important;
   }
 }
+
+/* ===== QA fixes ===== */
+.qedit input,
+.qedit select {
+  font-size: 0.92rem !important;
+  padding: 10px 12px !important;
+  min-height: 42px;
+}
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--paper-3);
+}
+.user-avatar-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.user-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ink);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pg-actions > span {
+  margin-left: auto !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  color: var(--ink-2) !important;
+  background: var(--paper-3);
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+.qadd {
+  padding: 9px 16px !important;
+  font-size: 0.85rem !important;
+}

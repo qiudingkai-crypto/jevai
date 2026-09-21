@@ -62,9 +62,17 @@ export default function Home() {
           </nav>
           <div className="topbar-cta">
             {user ? (
-              <button className="btn btn-ghost btn-sm" onClick={() => signOut()}>
-                Sign out
-              </button>
+              <div className="user-menu">
+                {user.image ? (
+                  <img src={user.image} alt="" className="user-avatar" referrerPolicy="no-referrer" />
+                ) : (
+                  <span className="user-avatar user-avatar-fallback">{user.name?.[0] || "U"}</span>
+                )}
+                <span className="user-name">{user.name || user.email}</span>
+                <button className="btn btn-ghost btn-sm" onClick={() => signOut()}>
+                  Sign out
+                </button>
+              </div>
             ) : (
               <button className="btn btn-primary btn-sm" onClick={() => signIn("google")}>
                 Sign in
