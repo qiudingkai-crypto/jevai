@@ -54,6 +54,7 @@ function TopBarRight() {
         color: canCheckIn ? "#000" : "var(--text)",
         fontSize: "0.82rem", fontWeight: 600,
         cursor: canCheckIn ? "pointer" : "default",
+        minWidth: 120, justifyContent: "center",
       }}>
         <span>🎁</span>
         <span>{canCheckIn ? "Daily reward" : "Checked in"}</span>
@@ -65,6 +66,7 @@ function TopBarRight() {
         border: "1px solid var(--border)",
         background: "var(--paper-raised, #f5f5f5)",
         fontSize: "0.82rem", fontWeight: 600,
+        minWidth: 90, justifyContent: "center",
       }}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <circle cx="12" cy="12" r="9" />
