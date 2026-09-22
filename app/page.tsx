@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import HeroAnimation from "./components/HeroAnimation";
 import Playground from "./components/Playground";
 import { FAQS } from "@/lib/scenarios";
@@ -32,7 +33,7 @@ function CheckInModal({ onClose, onClaimed }: { onClose: () => void; onClaimed: 
 
   const canClaim = !claimed && streak < 7;
 
-  return (
+  return createPortal(
     <div onClick={onClose} style={{
       position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
       zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
@@ -81,7 +82,8 @@ function CheckInModal({ onClose, onClaimed }: { onClose: () => void; onClaimed: 
         {!canClaim && !claimed && <div style={{ textAlign: "center", color: "#999" }}>Come back tomorrow!</div>}
         {streak >= 7 && !claimed && <div style={{ textAlign: "center", color: "#16a34a", fontWeight: 600 }}>Reward completed!</div>}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
