@@ -62,4 +62,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session;
     },
   },
+  events: {
+    async signIn({ user, account, isNewUser }) {
+      if (isNewUser && user.email) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { credits: 5 },
+        });
+      }
+    },
+  },
 });
