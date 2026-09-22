@@ -405,7 +405,7 @@ export const FAQS: [string, string][] = [
   ],
   [
     "How much does it cost?",
-    "Start free with 5 runs. Upgrade to Pro for unlimited runs — Creator $9.90/year, Studio $29.90/year, or Max $49.90/year. See our Pricing page for details.",
+    "Start free with 5 credits. Buy credit packs when you need more — Starter Pack $4.9 for 500 credits, or Pro Pack $9.9 for 1000 credits. See our Pricing page for details.",
   ],
   [
     "Can Jev read images or PDFs?",
