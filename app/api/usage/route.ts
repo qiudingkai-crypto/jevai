@@ -18,9 +18,11 @@ export async function GET() {
 
   const now = new Date();
   const isPro = user.plan === "pro" && (!user.subscriptionEndsAt || user.subscriptionEndsAt > now);
-  const totalFreeRuns = await prisma.usageRun.count({ where: { userId: session.user.id } });
-  const freeRemaining = Math.max(0, FREE_RUNS - totalFreeRuns);
-  const proRemaining = isPro ? Math.max(0, PRO_MONTHLY_RUNS - user.monthlyRunsUsed) : 0;
+  const freeRemaining = Math.max(0, FREE_RUNS - user.freeRunsUsed);
+  const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  const proRemaining = isPro
+    ? user.monthlyResetAt < monthStart ? PRO_MONTHLY_RUNS : Math.max(0, PRO_MONTHLY_RUNS - user.monthlyRunsUsed)
+    : 0;
 
   return NextResponse.json({
     authed: true,

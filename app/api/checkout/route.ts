@@ -38,6 +38,7 @@ export async function POST(req: NextRequest) {
       metadata: {
         userId: session.user.id || "",
         email: session.user.email,
+        productId,
       },
     });
 
