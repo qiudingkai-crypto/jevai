@@ -13,6 +13,8 @@ function CheckInModal({ onClose, onClaimed }: { onClose: () => void; onClaimed: 
   const [streak, setStreak] = useState(0);
   const [claimed, setClaimed] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     fetch("/api/checkin").then((r) => r.json()).then((d) => setStreak(d.streak || 0));
