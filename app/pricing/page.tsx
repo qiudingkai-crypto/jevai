@@ -4,52 +4,26 @@ import { useState } from "react";
 import Link from "next/link";
 import { signIn, useSession } from "next-auth/react";
 
-const TIERS = [
+const CREDIT_PACKS = [
   {
-    key: "creator",
-    name: "Creator",
+    key: "credits_500",
+    name: "Starter Pack",
+    price: "$4.9",
+    period: "one-time",
+    productId: "PROD_4kF76T5Y1jfdvehOHJ8OuW",
+    desc: "500 runs, never expire.",
+    runs: 500,
+  },
+  {
+    key: "credits_1000",
+    name: "Pro Pack",
     price: "$9.9",
-    period: "/ year",
-    highlight: false,
-    productId: "PROD_0QcN4J6nShFWox3sFiuyFY",
-    desc: "For solo creators running Jev in their own workflow.",
-    features: [
-      "Unlimited playground runs",
-      "All 3 question types",
-      "Saved scenarios",
-      "Email support",
-    ],
-  },
-  {
-    key: "studio",
-    name: "Studio",
-    price: "$29.9",
-    period: "/ year",
+    period: "one-time",
     highlight: true,
-    badge: "Most popular",
-    productId: "PROD_0QcN4J6nShFWox3sFiuyFY", // TODO: replace with Studio product ID
-    desc: "For teams evaluating proposals and candidates at scale.",
-    features: [
-      "Everything in Creator",
-      "Batch evaluation",
-      "Priority support",
-      "API access",
-    ],
-  },
-  {
-    key: "max",
-    name: "Max",
-    price: "$49.9",
-    period: "/ year",
-    highlight: false,
-    productId: "PROD_0QcN4J6nShFWox3sFiuyFY", // TODO: replace with Max product ID
-    desc: "For power users who need Jev everywhere in their pipeline.",
-    features: [
-      "Everything in Studio",
-      "Advanced analytics",
-      "Dedicated support",
-      "Custom integrations",
-    ],
+    badge: "Best value",
+    productId: "PROD_4FPBGerWxwmKRtC7G4fICu",
+    desc: "1,000 runs, never expire.",
+    runs: 1000,
   },
 ];
 
@@ -127,39 +101,39 @@ export default function PricingPage() {
           <div className="shell">
             <div className="section-head">
               <div className="section-eyebrow">Pricing</div>
-              <h2>Start free. Scale when you are.</h2>
+              <h2>Start free. Buy credits when you need them.</h2>
               <p>
-                No credit card required. Run Jev five times free, then decide
-                whether it belongs in your pipeline.
+                5 free runs on sign-up. Then buy credit packs — no subscription, no expiry.
               </p>
             </div>
-            <div className="price-grid" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
-              {TIERS.map((tier) => (
-                <div key={tier.key} className={`price-card${tier.highlight ? " hl" : ""}`}>
-                  {tier.badge && (
+
+            <div className="price-grid" style={{ gridTemplateColumns: "repeat(2, 1fr)", maxWidth: 700, margin: "0 auto" }}>
+              {CREDIT_PACKS.map((pack) => (
+                <div key={pack.key} className={`price-card${pack.highlight ? " hl" : ""}`}>
+                  {pack.badge && (
                     <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--mint)", marginBottom: 8 }}>
-                      {tier.badge}
+                      {pack.badge}
                     </div>
                   )}
-                  <div className="tier">{tier.name}</div>
+                  <div className="tier">{pack.name}</div>
                   <div className="price">
-                    {tier.price} <small>{tier.period}</small>
+                    {pack.price} <small>{pack.period}</small>
                   </div>
                   <p style={{ color: "var(--muted)", fontSize: "0.88rem" }}>
-                    {tier.desc}
+                    {pack.desc}
                   </p>
                   <ul>
-                    {tier.features.map((f) => (
-                      <li key={f}><CheckIcon /> {f}</li>
-                    ))}
+                    <li><CheckIcon /> {pack.runs} runs total</li>
+                    <li><CheckIcon /> Never expire</li>
+                    <li><CheckIcon /> Use anytime</li>
                   </ul>
                   <button
-                    className={tier.highlight ? "btn btn-primary" : "btn btn-ghost"}
-                    onClick={() => handleCheckout(tier.productId, tier.key)}
+                    className={pack.highlight ? "btn btn-primary" : "btn btn-ghost"}
+                    onClick={() => handleCheckout(pack.productId, pack.key)}
                     disabled={loading !== null}
                     style={{ width: "100%" }}
                   >
-                    {loading === tier.key ? "Redirecting…" : `Choose ${tier.name}`}
+                    {loading === pack.key ? "Redirecting…" : `Buy ${pack.name}`}
                   </button>
                 </div>
               ))}
@@ -174,7 +148,7 @@ export default function PricingPage() {
             Jev is an independent playground for the TypeSafe Jev model. Not
             affiliated with TypeSafe.
           </span>
-          <span><a href="/terms" style={{ color: "var(--muted)" }}>Terms</a> ·{" "}<a href="/privacy" style={{ color: "var(--muted)" }}>Privacy</a></span>
+          <span><a href="/terms" style={{ color: "var(--muted)" }}>Terms</a> ·{" "}<a href="/privacy" style={{ color: "var(--muted)" }}>Privacy</a> ·{" "}<a href="mailto:dingkai005@gmail.com" style={{ color: "var(--muted)" }}>Contact</a></span>
         </div>
       </footer>
     </>

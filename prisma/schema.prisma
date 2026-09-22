@@ -11,16 +11,22 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
-  plan          String    @default("free")
-  createdAt     DateTime  @default(now())
-  accounts      Account[]
-  sessions      Session[]
-  usageRuns     UsageRun[]
+  id                  String    @id @default(cuid())
+  name                String?
+  email               String    @unique
+  emailVerified       DateTime?
+  image               String?
+  plan                String    @default("free") // free | pro
+  credits             Int       @default(0) // purchased credits (one-time, never expire)
+  monthlyRunsUsed     Int       @default(0) // this month's used runs (resets monthly)
+  monthlyResetAt      DateTime  @default(now()) // when to reset monthlyRunsUsed
+  subscriptionEndsAt  DateTime? // when pro subscription expires
+  lastCheckInAt       DateTime? // last daily check-in
+  checkInStreak       Int       @default(0) // current streak day (0-7)
+  createdAt           DateTime  @default(now())
+  accounts            Account[]
+  sessions            Session[]
+  usageRuns           UsageRun[]
 }
 
 model Account {

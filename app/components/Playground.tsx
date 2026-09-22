@@ -153,7 +153,7 @@ export default function Playground() {
   useEffect(() => {
     if (!isAuthed) { setRemaining(null); return; }
     fetch("/api/usage").then(r => r.json()).then(d => {
-      if (d.authed) setRemaining(d.remaining);
+      if (d.authed) setRemaining(d.totalRemaining);
     }).catch(() => {});
   }, [isAuthed]);
 
@@ -240,7 +240,7 @@ export default function Playground() {
       } else {
         setAnswers(data);
         fetch("/api/usage").then(r => r.json()).then(d => {
-          if (d.authed) setRemaining(d.remaining);
+          if (d.authed) setRemaining(d.totalRemaining);
         }).catch(() => {});
       }
     } catch (e: unknown) {
@@ -307,9 +307,9 @@ export default function Playground() {
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            maxLength={8000}
+            maxLength={50000}
           />
-          <div className="char-count">{text.length} / 8,000</div>
+          <div className="char-count">{text.length} / 50,000</div>
 
           <label className="step-label">
             <span className="step-num">2</span> Questions
@@ -362,7 +362,7 @@ export default function Playground() {
             <button className="btn btn-ghost" onClick={reset}>Reset</button>
             {isAuthed && remaining !== null && (
               <span style={{ marginLeft: "auto", fontSize: "0.82rem", color: "var(--muted)" }}>
-                {remaining === -1 ? "Pro · unlimited runs" : `${remaining} free ${remaining === 1 ? "run" : "runs"} left`}
+                {remaining} runs left
               </span>
             )}
           </div>

@@ -3,7 +3,8 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
 const FREE_RUNS = 5;
-const MAX_TEXT_LEN = 8000;
+const PRO_MONTHLY_RUNS = 1000;
+const MAX_TEXT_LEN = 50000;
 const UPSTREAM_TIMEOUT_MS = 30_000;
 
 export async function POST(request: Request) {
@@ -14,15 +15,39 @@ export async function POST(request: Request) {
 
   const userId = session.user.id;
 
-  // Check user plan
+  // Get user and check if monthly reset is needed
+  const now = new Date();
   const user = await prisma.user.findUnique({ where: { id: userId } });
-  const isPro = user?.plan === "pro";
+  if (!user) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
 
-  // Count existing runs
-  const runCount = await prisma.usageRun.count({ where: { userId } });
-  if (!isPro && runCount >= FREE_RUNS) {
+  // Reset monthly quota if a new month has started
+  let monthlyRunsUsed = user.monthlyRunsUsed;
+  const resetAt = user.monthlyResetAt;
+  if (now.getMonth() !== resetAt.getMonth() || now.getFullYear() !== resetAt.getFullYear()) {
+    monthlyRunsUsed = 0;
+    await prisma.user.update({
+      where: { id: userId },
+      data: { monthlyRunsUsed: 0, monthlyResetAt: now },
+    });
+  }
+
+  // Determine which quota to consume
+  const isPro = user.plan === "pro" && (!user.subscriptionEndsAt || user.subscriptionEndsAt > now);
+  const totalFreeRuns = await prisma.usageRun.count({ where: { userId } });
+
+  let quotaType: "pro_monthly" | "credits" | "free" | null = null;
+
+  if (isPro && monthlyRunsUsed < PRO_MONTHLY_RUNS) {
+    quotaType = "pro_monthly";
+  } else if (user.credits > 0) {
+    quotaType = "credits";
+  } else if (totalFreeRuns < FREE_RUNS) {
+    quotaType = "free";
+  } else {
     return NextResponse.json(
-      { error: `You've used all ${FREE_RUNS} free runs. Subscribe to continue.`, code: "FREE_RUNS_EXHAUSTED" },
+      { error: "You've run out of runs. Upgrade to Pro or buy credits.", code: "QUOTA_EXHAUSTED" },
       { status: 403 }
     );
   }
@@ -90,6 +115,20 @@ export async function POST(request: Request) {
           outputTokens: data.usage?.output_tokens ?? null,
         },
       });
+
+      // Deduct from the appropriate quota
+      if (quotaType === "pro_monthly") {
+        await prisma.user.update({
+          where: { id: userId },
+          data: { monthlyRunsUsed: { increment: 1 } },
+        });
+      } else if (quotaType === "credits") {
+        await prisma.user.update({
+          where: { id: userId },
+          data: { credits: { decrement: 1 } },
+        });
+      }
+      // free runs are counted by usageRun.count, no deduction needed
     }
 
     return NextResponse.json(data, { status: res.status });

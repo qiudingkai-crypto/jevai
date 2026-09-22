@@ -3,6 +3,7 @@
 import { useState } from "react";
 import HeroAnimation from "./components/HeroAnimation";
 import Playground from "./components/Playground";
+import CheckInWidget from "./components/CheckInWidget";
 import { FAQS } from "@/lib/scenarios";
 import { signIn, signOut, useSession } from "next-auth/react";
 
@@ -294,6 +295,7 @@ export default function Home() {
           </span>
         </div>
       </footer>
+      <CheckInWidget />
     </>
   );
 }

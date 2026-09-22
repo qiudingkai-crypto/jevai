@@ -2,54 +2,45 @@ import { NextResponse } from "next/server";
 import { verifyWebhook, WebhookEventType } from "@waffo/pancake-ts";
 import { prisma } from "@/lib/prisma";
 
+// Product IDs from Waffo dashboard
+const CREDIT_PACKS: Record<string, number> = {
+  "PROD_4kF76T5Y1jfdvehOHJ8OuW": 500,  // Starter Pack $4.9
+  "PROD_4FPBGerWxwmKRtC7G4fICu": 1000, // Pro Pack $9.9
+};
+
 export async function POST(request: Request) {
   const body = await request.text();
   const signature = request.headers.get("x-waffo-signature");
 
   try {
     const event = verifyWebhook(body, signature || "");
+    console.log(`[Waffo] Event: ${event.eventType}`, JSON.stringify(event.data));
 
     switch (event.eventType) {
-      case WebhookEventType.OrderCompleted:
-        console.log(`[Waffo] Order completed: ${event.data.orderId}`);
-        // Mark user as pro in DB
-        if (event.data.buyerEmail) {
+      case WebhookEventType.OrderCompleted: {
+        const email = event.data.buyerEmail;
+        if (!email) break;
+
+        const productId = (event.data as any).productId || (event.data as any).items?.[0]?.productId;
+
+        if (productId && CREDIT_PACKS[productId]) {
+          const credits = CREDIT_PACKS[productId];
           await prisma.user.updateMany({
-            where: { email: event.data.buyerEmail },
-            data: { plan: "pro" },
+            where: { email },
+            data: { credits: { increment: credits } },
           });
+          console.log(`[Waffo] Added ${credits} credits to ${email}`);
+        } else {
+          console.log(`[Waffo] Unknown product: ${productId}`);
         }
         break;
+      }
 
-      case WebhookEventType.SubscriptionActivated:
-        console.log(`[Waffo] Subscription activated: ${event.data.buyerEmail}`);
-        if (event.data.buyerEmail) {
-          await prisma.user.updateMany({
-            where: { email: event.data.buyerEmail },
-            data: { plan: "pro" },
-          });
-        }
-        break;
-
-      case WebhookEventType.SubscriptionCanceled:
-        console.log(`[Waffo] Subscription canceled: ${event.data.buyerEmail}`);
-        if (event.data.buyerEmail) {
-          await prisma.user.updateMany({
-            where: { email: event.data.buyerEmail },
-            data: { plan: "free" },
-          });
-        }
-        break;
-
-      case WebhookEventType.RefundSucceeded:
+      case WebhookEventType.RefundSucceeded: {
         console.log(`[Waffo] Refund: ${event.data.amount} ${event.data.currency}`);
-        if (event.data.buyerEmail) {
-          await prisma.user.updateMany({
-            where: { email: event.data.buyerEmail },
-            data: { plan: "free" },
-          });
-        }
+        // TODO: deduct credits on refund if needed
         break;
+      }
 
       default:
         console.log(`[Waffo] Unhandled event: ${event.eventType}`);
