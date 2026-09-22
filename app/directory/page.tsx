@@ -43,7 +43,7 @@ export default async function DirectoryPage({
         <div className={styles.grid}>
           {websites.map((website) => {
             const domain = new URL(website.url).hostname;
-            const icon = website.iconUrl ?? `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+            const icon = website.iconUrl ?? `https://icons.duckduckgo.com/ip3/${domain}.ico`;
             return (
               <div className={styles.cardWrapper} key={website.id}>
                 <a
