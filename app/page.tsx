@@ -267,6 +267,7 @@ export default function Home() {
             Jev Verdict
           </a>
           <nav className="nav">
+            <a href="/directory">Explore</a>
             <a href="#playground">Playground</a>
             <a href="#types">Question types</a>
             <a href="/pricing">Pricing</a>

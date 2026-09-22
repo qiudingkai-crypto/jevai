@@ -141,6 +141,9 @@ h4 {
 .nav a:hover {
   color: var(--accent);
 }
+.nav a.active {
+  color: var(--accent);
+}
 .topbar-cta {
   display: flex;
   gap: 10px;

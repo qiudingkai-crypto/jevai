@@ -82,3 +82,12 @@ model UsageRun {
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
+model DirectoryWebsite {
+  id          String   @id @default(cuid())
+  name        String
+  url         String   @unique
+  iconUrl     String?
+  description String
+  createdAt   DateTime @default(now())
+}
