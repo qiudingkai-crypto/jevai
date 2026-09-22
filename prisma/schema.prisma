@@ -24,6 +24,7 @@ model User {
   subscriptionEndsAt  DateTime? // when pro subscription expires
   lastCheckInAt       DateTime? // last daily check-in
   checkInStreak       Int       @default(0) // current streak day (0-7)
+  passwordHash        String? // hashed password for email/password login
   createdAt           DateTime  @default(now())
   accounts            Account[]
   sessions            Session[]

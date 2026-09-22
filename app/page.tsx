@@ -116,7 +116,7 @@ function TopBarRight({ onOpenCheckIn }: { onOpenCheckIn: () => void }) {
   }, [user]);
 
   if (!user) {
-    return <button className="btn btn-primary btn-sm" onClick={() => signIn("google")}>Sign in</button>;
+    return <button className="btn btn-primary btn-sm" onClick={() => window.location.href = "/signin"}>Sign in</button>;
   }
 
   return (
@@ -254,7 +254,7 @@ export default function Home() {
     if (user) {
       document.getElementById("playground")?.scrollIntoView({ behavior: "smooth" });
     } else {
-      signIn("google");
+      window.location.href = "/signin";
     }
   };
 

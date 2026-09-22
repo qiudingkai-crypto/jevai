@@ -12,6 +12,7 @@
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.3",
     "@prisma/client": "^6.19.3",
+    "@types/bcryptjs": "^2.4.6",
     "@vercel/analytics": "^2.0.1",
     "@waffo/pancake-ts": "^0.23.0",
     "bcryptjs": "^3.0.3",
