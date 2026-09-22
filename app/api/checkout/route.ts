@@ -8,8 +8,8 @@ const client = new WaffoPancake({
 });
 
 const ALLOWED_PRODUCT_IDS = [
-  "PROD_4kF76T5Y1jfdvehOHJ8OuW", // Starter Pack $4.9 = 500 credits
-  "PROD_4FPBGerWxwmKRtC7G4fICu", // Pro Pack $9.9 = 1000 credits
+  "PROD_4FPBGerWxwmKRtC7G4fICu", // Starter Pack $4.9 = 500 credits
+  "PROD_4kF76T5Y1jfdvehOHJ8OuW", // Pro Pack $9.9 = 1000 credits
 ];
 
 export async function POST(req: NextRequest) {

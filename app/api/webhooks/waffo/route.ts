@@ -4,8 +4,8 @@ import { prisma } from "@/lib/prisma";
 
 // Product IDs from Waffo dashboard
 const CREDIT_PACKS: Record<string, number> = {
-  "PROD_4kF76T5Y1jfdvehOHJ8OuW": 500,  // Starter Pack $4.9
-  "PROD_4FPBGerWxwmKRtC7G4fICu": 1000, // Pro Pack $9.9
+  "PROD_4FPBGerWxwmKRtC7G4fICu": 500,  // Starter Pack $4.9
+  "PROD_4kF76T5Y1jfdvehOHJ8OuW": 1000, // Pro Pack $9.9
 };
 
 export async function POST(request: Request) {
