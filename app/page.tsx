@@ -290,7 +290,7 @@ export default function Home() {
           <span>
             <a href="/terms" style={{ color: "var(--muted)" }}>Terms</a> ·{" "}
             <a href="/privacy" style={{ color: "var(--muted)" }}>Privacy</a> ·{" "}
-            <a href="mailto:support@jev-ai.xyz" style={{ color: "var(--muted)" }}>Contact</a>
+            <a href="mailto:dingkai005@gmail.com" style={{ color: "var(--muted)" }}>Contact</a>
           </span>
         </div>
       </footer>

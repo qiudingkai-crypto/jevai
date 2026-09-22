@@ -86,7 +86,7 @@ export default function TermsPage() {
           <p>We may update these Terms from time to time. We will notify users of material changes by updating the "Last updated" date at the top of this page.</p>
 
           <h2 style={{ fontSize: "1.25rem", fontWeight: 700, marginTop: 32, marginBottom: 12, color: "var(--ink)" }}>12. Contact</h2>
-          <p>For questions about these Terms, billing, or refunds, please contact us at <a href="mailto:support@jev-ai.xyz" style={{ color: "var(--accent)" }}>support@jev-ai.xyz</a>.</p>
+          <p>For questions about these Terms, billing, or refunds, please contact us at <a href="mailto:dingkai005@gmail.com" style={{ color: "var(--accent)" }}>dingkai005@gmail.com</a>.</p>
         </div>
       </main>
 
@@ -96,7 +96,7 @@ export default function TermsPage() {
           <span>
             <Link href="/terms" style={{ color: "var(--muted)" }}>Terms</Link> ·{" "}
             <Link href="/privacy" style={{ color: "var(--muted)" }}>Privacy</Link> ·{" "}
-            <a href="mailto:support@jev-ai.xyz" style={{ color: "var(--muted)" }}>Contact</a>
+            <a href="mailto:dingkai005@gmail.com" style={{ color: "var(--muted)" }}>Contact</a>
           </span>
         </div>
       </footer>

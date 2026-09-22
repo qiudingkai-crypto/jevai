@@ -92,7 +92,7 @@ export default function PrivacyPage() {
           <p>We may update this Privacy Policy from time to time. We will notify users of material changes by updating the "Last updated" date at the top of this page.</p>
 
           <h2 style={{ fontSize: "1.25rem", fontWeight: 700, marginTop: 32, marginBottom: 12, color: "var(--ink)" }}>9. Contact</h2>
-          <p>For privacy-related questions, please contact us at support@jev-ai.xyz.</p>
+          <p>For privacy-related questions, please contact us at dingkai005@gmail.com.</p>
         </div>
       </main>
 
@@ -102,7 +102,7 @@ export default function PrivacyPage() {
           <span>
             <Link href="/terms" style={{ color: "var(--muted)" }}>Terms</Link> ·{" "}
             <Link href="/privacy" style={{ color: "var(--muted)" }}>Privacy</Link> ·{" "}
-            <a href="mailto:support@jev-ai.xyz" style={{ color: "var(--muted)" }}>Contact</a>
+            <a href="mailto:dingkai005@gmail.com" style={{ color: "var(--muted)" }}>Contact</a>
           </span>
         </div>
       </footer>
