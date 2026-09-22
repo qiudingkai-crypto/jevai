@@ -101,7 +101,8 @@ export default function PrivacyPage() {
           <span>Jev Verdict — Built for decisions. Still review the hard ones.</span>
           <span>
             <Link href="/terms" style={{ color: "var(--muted)" }}>Terms</Link> ·{" "}
-            <Link href="/privacy" style={{ color: "var(--muted)" }}>Privacy</Link>
+            <Link href="/privacy" style={{ color: "var(--muted)" }}>Privacy</Link> ·{" "}
+            <a href="mailto:support@jev-ai.xyz" style={{ color: "var(--muted)" }}>Contact</a>
           </span>
         </div>
       </footer>

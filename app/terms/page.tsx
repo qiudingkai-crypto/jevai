@@ -58,7 +58,13 @@ export default function TermsPage() {
           <h2 style={{ fontSize: "1.25rem", fontWeight: 700, marginTop: 32, marginBottom: 12, color: "var(--ink)" }}>4. Free Tier and Paid Plans</h2>
           <p>New users receive 5 free runs upon sign-up. Additional runs require a paid subscription. Pricing details are available on our <Link href="/pricing" style={{ color: "var(--accent)" }}>Pricing page</Link>.</p>
 
-          <h2 style={{ fontSize: "1.25rem", fontWeight: 700, marginTop: 32, marginBottom: 12, color: "var(--ink)" }}>5. Acceptable Use</h2>
+          <h2 style={{ fontSize: "1.25rem", fontWeight: 700, marginTop: 32, marginBottom: 12, color: "var(--ink)" }}>5. Subscriptions and Auto-Renewal</h2>
+          <p>Paid plans are billed annually. Your subscription will automatically renew at the end of each billing period on the same date, unless you cancel it before the renewal date. You will be charged the then-current annual price on each renewal. You can cancel auto-renewal at any time from your account settings or by contacting us; you will retain access to the Service for the remainder of the prepaid period.</p>
+
+          <h2 style={{ fontSize: "1.25rem", fontWeight: 700, marginTop: 32, marginBottom: 12, color: "var(--ink)" }}>6. Cancellations and Refunds</h2>
+          <p>You may cancel your subscription at any time. Cancellation takes effect at the end of the current billing period; no partial or pro-rata refunds are provided for cancellations mid-period. If you believe you have been charged in error, please contact us within 7 days of the charge with the details of the transaction. Refund requests are reviewed on a case-by-case basis. We do not offer refunds for unused time on subscriptions that have been active for more than 7 days.</p>
+
+          <h2 style={{ fontSize: "1.25rem", fontWeight: 700, marginTop: 32, marginBottom: 12, color: "var(--ink)" }}>7. Acceptable Use</h2>
           <p>You agree not to use the Service to:</p>
           <ul style={{ paddingLeft: 20, marginTop: 8 }}>
             <li>Generate content that is unlawful, harmful, or deceptive</li>
@@ -67,20 +73,20 @@ export default function TermsPage() {
             <li>Use the Service to make high-stakes decisions without human review</li>
           </ul>
 
-          <h2 style={{ fontSize: "1.25rem", fontWeight: 700, marginTop: 32, marginBottom: 12, color: "var(--ink)" }}>6. AI Output Disclaimer</h2>
+          <h2 style={{ fontSize: "1.25rem", fontWeight: 700, marginTop: 32, marginBottom: 12, color: "var(--ink)" }}>8. AI Output Disclaimer</h2>
           <p>Jev Verdict returns AI-generated results that may be inaccurate or misleading. You are solely responsible for verifying any decisions made using the Service. The Service should not be used as a substitute for professional judgment.</p>
 
-          <h2 style={{ fontSize: "1.25rem", fontWeight: 700, marginTop: 32, marginBottom: 12, color: "var(--ink)" }}>7. Intellectual Property</h2>
+          <h2 style={{ fontSize: "1.25rem", fontWeight: 700, marginTop: 32, marginBottom: 12, color: "var(--ink)" }}>9. Intellectual Property</h2>
           <p>The Service, including its design, text, and software, is owned by Jev Verdict. You retain ownership of the content you submit to the Service.</p>
 
-          <h2 style={{ fontSize: "1.25rem", fontWeight: 700, marginTop: 32, marginBottom: 12, color: "var(--ink)" }}>8. Limitation of Liability</h2>
+          <h2 style={{ fontSize: "1.25rem", fontWeight: 700, marginTop: 32, marginBottom: 12, color: "var(--ink)" }}>10. Limitation of Liability</h2>
           <p>The Service is provided "as is" without warranties of any kind. We shall not be liable for any indirect, incidental, or consequential damages arising from your use of the Service.</p>
 
-          <h2 style={{ fontSize: "1.25rem", fontWeight: 700, marginTop: 32, marginBottom: 12, color: "var(--ink)" }}>9. Changes to Terms</h2>
+          <h2 style={{ fontSize: "1.25rem", fontWeight: 700, marginTop: 32, marginBottom: 12, color: "var(--ink)" }}>11. Changes to Terms</h2>
           <p>We may update these Terms from time to time. We will notify users of material changes by updating the "Last updated" date at the top of this page.</p>
 
-          <h2 style={{ fontSize: "1.25rem", fontWeight: 700, marginTop: 32, marginBottom: 12, color: "var(--ink)" }}>10. Contact</h2>
-          <p>For questions about these Terms, please contact us at support@jev-ai.xyz.</p>
+          <h2 style={{ fontSize: "1.25rem", fontWeight: 700, marginTop: 32, marginBottom: 12, color: "var(--ink)" }}>12. Contact</h2>
+          <p>For questions about these Terms, billing, or refunds, please contact us at <a href="mailto:support@jev-ai.xyz" style={{ color: "var(--accent)" }}>support@jev-ai.xyz</a>.</p>
         </div>
       </main>
 
@@ -89,7 +95,8 @@ export default function TermsPage() {
           <span>Jev Verdict — Built for decisions. Still review the hard ones.</span>
           <span>
             <Link href="/terms" style={{ color: "var(--muted)" }}>Terms</Link> ·{" "}
-            <Link href="/privacy" style={{ color: "var(--muted)" }}>Privacy</Link>
+            <Link href="/privacy" style={{ color: "var(--muted)" }}>Privacy</Link> ·{" "}
+            <a href="mailto:support@jev-ai.xyz" style={{ color: "var(--muted)" }}>Contact</a>
           </span>
         </div>
       </footer>
