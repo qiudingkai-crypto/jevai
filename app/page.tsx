@@ -35,7 +35,7 @@ function CheckInModal({ onClose, onClaimed }: { onClose: () => void; onClaimed: 
   return (
     <div onClick={onClose} style={{
       position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
-      zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
+      zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
     }}>
       <div onClick={(e) => e.stopPropagation()} style={{
         background: "#fff", borderRadius: 24, padding: 32, maxWidth: 600, width: "100%",
@@ -85,13 +85,12 @@ function CheckInModal({ onClose, onClaimed }: { onClose: () => void; onClaimed: 
   );
 }
 
-function TopBarRight() {
+function TopBarRight({ onOpenCheckIn }: { onOpenCheckIn: () => void }) {
   const { data: session } = useSession();
   const user = session?.user;
   const [credits, setCredits] = useState<number | null>(null);
   const [canCheckIn, setCanCheckIn] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [checkInOpen, setCheckInOpen] = useState(false);
 
   async function refresh() {
     if (!user) return;
@@ -119,7 +118,7 @@ function TopBarRight() {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
       <button
-        onClick={() => canCheckIn && setCheckInOpen(true)}
+        onClick={() => canCheckIn && onOpenCheckIn()}
         style={{
           display: "flex", alignItems: "center", gap: 6,
           padding: "6px 12px", borderRadius: 999,
@@ -210,8 +209,6 @@ function TopBarRight() {
           </div>
         )}
       </div>
-
-      {checkInOpen && <CheckInModal onClose={() => setCheckInOpen(false)} onClaimed={refresh} />}
     </div>
   );
 }
@@ -246,6 +243,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 export default function Home() {
   const { data: session } = useSession();
   const user = session?.user;
+  const [checkInOpen, setCheckInOpen] = useState(false);
 
   const handlePrimaryCta = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -271,13 +269,12 @@ export default function Home() {
             <a href="#faq">FAQ</a>
           </nav>
           <div className="topbar-cta">
-            <TopBarRight />
+            <TopBarRight onOpenCheckIn={() => setCheckInOpen(true)} />
           </div>
         </div>
       </header>
 
       <main id="top">
-        {/* hero */}
         <section className="hero shell">
           <div className="hero-grid">
             <div>
@@ -312,7 +309,6 @@ export default function Home() {
 
         <Playground />
 
-        {/* question types */}
         <section className="types" id="types">
           <div className="shell">
             <div className="section-head">
@@ -387,7 +383,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* features */}
         <section className="features">
           <div className="shell">
             <div className="section-head">
@@ -423,7 +418,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* how it works */}
         <section className="how">
           <div className="shell">
             <div className="section-head">
@@ -459,7 +453,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* FAQ */}
         <section className="faq" id="faq">
           <div className="shell">
             <div className="section-head">
@@ -488,6 +481,8 @@ export default function Home() {
           </span>
         </div>
       </footer>
+
+      {checkInOpen && <CheckInModal onClose={() => setCheckInOpen(false)} onClaimed={() => window.dispatchEvent(new Event("credits-updated"))} />}
     </>
   );
 }
