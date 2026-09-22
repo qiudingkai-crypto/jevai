@@ -153,7 +153,7 @@ export default function Playground() {
   useEffect(() => {
     if (!isAuthed) { setRemaining(null); return; }
     fetch("/api/usage").then(r => r.json()).then(d => {
-      if (d.authed) setRemaining(d.totalRemaining);
+      if (d.authed) { setRemaining(d.totalRemaining); window.dispatchEvent(new Event("credits-updated")); }
     }).catch(() => {});
   }, [isAuthed]);
 
@@ -232,7 +232,7 @@ export default function Playground() {
       });
       const data: RunResponse & { code?: string } = await res.json();
       if (!res.ok || data.error) {
-        if (data.code === "FREE_RUNS_EXHAUSTED") {
+        if (data.code === "QUOTA_EXHAUSTED") {
           setExhausted(true);
           setRemaining(0);
         }
@@ -240,7 +240,7 @@ export default function Playground() {
       } else {
         setAnswers(data);
         fetch("/api/usage").then(r => r.json()).then(d => {
-          if (d.authed) setRemaining(d.totalRemaining);
+          if (d.authed) { setRemaining(d.totalRemaining); window.dispatchEvent(new Event("credits-updated")); }
         }).catch(() => {});
       }
     } catch (e: unknown) {

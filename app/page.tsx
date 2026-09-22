@@ -120,7 +120,7 @@ function TopBarRight({ onOpenCheckIn }: { onOpenCheckIn: () => void }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
       <button
-        onClick={() => canCheckIn && onOpenCheckIn()}
+        onClick={onOpenCheckIn}
         style={{
           display: "flex", alignItems: "center", gap: 6,
           padding: "6px 12px", borderRadius: 999,
