@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 
 export default function SignUpPage() {
   const router = useRouter();
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -76,18 +75,7 @@ export default function SignUpPage() {
         </div>
 
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <input
-            type="text"
-            placeholder="Full name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            style={{
-              padding: "12px", borderRadius: 12, border: "1px solid #d1d5db", background: "#fff",
-              fontSize: "0.95rem", outline: "none",
-            }}
-          />
-          <input
+<input
             type="email"
             placeholder="Email"
             value={email}
