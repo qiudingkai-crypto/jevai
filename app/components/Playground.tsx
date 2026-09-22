@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { SCENARIOS, ICON_PATHS, type QuestionDef } from "@/lib/scenarios";
+import { buildQuestions, choiceOptions, copyQuestion, MAX_CHOICE_OPTIONS, MAX_SCORE_LEVELS, scoreLevels, validateQuestions, yesNoCriteria } from "@/lib/question-config";
 import { signIn, useSession } from "next-auth/react";
 
 interface AnswerNoul {
@@ -136,13 +137,14 @@ const DEMO_ANSWERS: Record<string, RunResponse> = {
 };
 
 export default function Playground() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const isAuthed = status === "authenticated";
   const [activeIdx, setActiveIdx] = useState(0);
   const [text, setText] = useState(SCENARIOS[0].text);
   const [questions, setQuestions] = useState<QuestionDef[]>(
-    SCENARIOS[0].questions
+    SCENARIOS[0].questions.map(copyQuestion)
   );
+  const [questionsEdited, setQuestionsEdited] = useState(false);
   const [openQ, setOpenQ] = useState(-1);
   const [running, setRunning] = useState(false);
   const [answers, setAnswers] = useState<RunResponse | null>(null);
@@ -151,7 +153,7 @@ export default function Playground() {
   const [exhausted, setExhausted] = useState(false);
 
   useEffect(() => {
-    if (!isAuthed) { setRemaining(null); return; }
+    if (!isAuthed) return;
     fetch("/api/usage").then(r => r.json()).then(d => {
       if (d.authed) { setRemaining(d.totalRemaining); window.dispatchEvent(new Event("credits-updated")); }
     }).catch(() => {});
@@ -162,8 +164,16 @@ export default function Playground() {
   const selectScenario = (idx: number) => {
     setActiveIdx(idx);
     setText(SCENARIOS[idx].text);
-    setQuestions(SCENARIOS[idx].questions.map((q) => ({ ...q })));
+    setQuestions(SCENARIOS[idx].questions.map(copyQuestion));
+    setQuestionsEdited(false);
     setOpenQ(-1);
+    setAnswers(null);
+    setError(null);
+  };
+
+  const editQuestions = (update: (current: QuestionDef[]) => QuestionDef[]) => {
+    setQuestions(update);
+    setQuestionsEdited(true);
     setAnswers(null);
     setError(null);
   };
@@ -176,48 +186,88 @@ export default function Playground() {
       instructions: type === "noul" ? "Is this true?" : "What should we decide?",
     };
     if (type === "choice") {
-      base.criteria = { "option A": "Option A", "option B": "Option B" };
+      base.choiceOptions = [
+        { label: "Option A", description: "When option A applies" },
+        { label: "Option B", description: "When option B applies" },
+      ];
     } else if (type === "score") {
-      base.criteria = ["Low", "", "", "", "", "High"];
+      base.criteria = ["Low: little evidence", "Medium: mixed evidence", "High: strong evidence"];
     }
-    setQuestions([...questions, base]);
+    editQuestions((current) => [...current, base]);
     setOpenQ(questions.length);
   };
 
   const removeQuestion = (idx: number) => {
-    setQuestions(questions.filter((_, i) => i !== idx));
+    editQuestions((current) => current.filter((_, i) => i !== idx));
     if (openQ >= questions.length - 1) setOpenQ(-1);
   };
 
   const updateQuestionText = (idx: number, val: string) => {
-    const copy = [...questions];
-    copy[idx] = { ...copy[idx], instructions: val };
-    setQuestions(copy);
+    editQuestions((current) => current.map((q, i) => i === idx ? { ...q, instructions: val } : q));
+  };
+
+  const updateYesNoDefinition = (idx: number, answer: "true" | "false", value: string) => {
+    editQuestions((current) => current.map((q, i) => i === idx
+      ? { ...q, criteria: { ...yesNoCriteria(q), [answer]: value } }
+      : q));
+  };
+
+  const updateChoiceOption = (idx: number, optionIdx: number, field: "label" | "description", value: string) => {
+    editQuestions((current) => current.map((q, i) => i === idx
+      ? { ...q, choiceOptions: choiceOptions(q).map((option, j) => j === optionIdx ? { ...option, [field]: value } : option) }
+      : q));
+  };
+
+  const addChoiceOption = (idx: number) => {
+    editQuestions((current) => current.map((q, i) => i === idx
+      ? { ...q, choiceOptions: [...choiceOptions(q), { label: "", description: "" }] }
+      : q));
+  };
+
+  const removeChoiceOption = (idx: number, optionIdx: number) => {
+    editQuestions((current) => current.map((q, i) => i === idx
+      ? { ...q, choiceOptions: choiceOptions(q).filter((_, j) => j !== optionIdx) }
+      : q));
+  };
+
+  const updateScoreLevel = (idx: number, levelIdx: number, value: string) => {
+    editQuestions((current) => current.map((q, i) => i === idx
+      ? { ...q, criteria: scoreLevels(q).map((level, j) => j === levelIdx ? value : level) }
+      : q));
+  };
+
+  const addScoreLevel = (idx: number) => {
+    editQuestions((current) => current.map((q, i) => i === idx
+      ? { ...q, criteria: [...scoreLevels(q), ""] }
+      : q));
+  };
+
+  const removeScoreLevel = (idx: number, levelIdx: number) => {
+    editQuestions((current) => current.map((q, i) => i === idx
+      ? { ...q, criteria: scoreLevels(q).filter((_, j) => j !== levelIdx) }
+      : q));
   };
 
   const buildRequest = () => {
-    const qMap: Record<string, Record<string, unknown>> = {};
-    questions.forEach((q) => {
-      qMap[q.id] = {
-        type: q.type,
-        instructions: q.instructions,
-        ...(q.criteria ? { criteria: q.criteria } : {}),
-      };
-    });
     return {
       state: text,
       model: "jev-latest",
-      questions: qMap,
+      questions: buildQuestions(questions),
     };
   };
 
   const runJev = async () => {
-    if (!isAuthed) {
-      signIn("google");
-      return;
-    }
     if (!text.trim()) {
       setError("Please enter some text to analyze.");
+      return;
+    }
+    const questionError = validateQuestions(questions);
+    if (questionError) {
+      setError(questionError);
+      return;
+    }
+    if (!isAuthed) {
+      signIn("google");
       return;
     }
     setRunning(true);
@@ -342,6 +392,97 @@ export default function Playground() {
                     value={q.instructions}
                     onChange={(e) => updateQuestionText(i, e.target.value)}
                   />
+                  {q.type === "noul" && (
+                    <>
+                      <p className="criteria-help">Optional: explain exactly what counts as Yes and No.</p>
+                      <label htmlFor={`${q.id}-yes`}>Yes means</label>
+                      <input
+                        id={`${q.id}-yes`}
+                        type="text"
+                        placeholder="What evidence makes the answer Yes?"
+                        value={yesNoCriteria(q).true}
+                        onChange={(e) => updateYesNoDefinition(i, "true", e.target.value)}
+                      />
+                      <label htmlFor={`${q.id}-no`}>No means</label>
+                      <input
+                        id={`${q.id}-no`}
+                        type="text"
+                        placeholder="What evidence makes the answer No?"
+                        value={yesNoCriteria(q).false}
+                        onChange={(e) => updateYesNoDefinition(i, "false", e.target.value)}
+                      />
+                    </>
+                  )}
+                  {q.type === "choice" && (
+                    <>
+                      <p className="criteria-help">Name each option and describe when Jev should choose it.</p>
+                      <div className="criteria-list">
+                        {choiceOptions(q).map((option, optionIdx) => (
+                          <div className="criteria-row" key={optionIdx}>
+                            <input
+                              type="text"
+                              aria-label={`Choice ${optionIdx + 1} name`}
+                              placeholder="Option name"
+                              value={option.label}
+                              onChange={(e) => updateChoiceOption(i, optionIdx, "label", e.target.value)}
+                            />
+                            <input
+                              type="text"
+                              aria-label={`Choice ${optionIdx + 1} definition`}
+                              placeholder="When should Jev pick this?"
+                              value={option.description}
+                              onChange={(e) => updateChoiceOption(i, optionIdx, "description", e.target.value)}
+                            />
+                            <button
+                              className="criteria-remove"
+                              type="button"
+                              aria-label={`Remove choice ${optionIdx + 1}`}
+                              disabled={choiceOptions(q).length <= 2}
+                              onClick={() => removeChoiceOption(i, optionIdx)}
+                            >×</button>
+                          </div>
+                        ))}
+                      </div>
+                      <button
+                        className="criteria-add"
+                        type="button"
+                        disabled={choiceOptions(q).length >= MAX_CHOICE_OPTIONS}
+                        onClick={() => addChoiceOption(i)}
+                      >+ Add option</button>
+                    </>
+                  )}
+                  {q.type === "score" && (
+                    <>
+                      <p className="criteria-help">Define 2–10 ordered levels, from lowest (0) to highest.</p>
+                      <div className="criteria-list">
+                        {scoreLevels(q).map((level, levelIdx) => (
+                          <div className="criteria-row score-level" key={levelIdx}>
+                            <span className="criteria-index">{levelIdx}</span>
+                            <input
+                              type="text"
+                              aria-label={`Score level ${levelIdx} definition`}
+                              placeholder={`What does level ${levelIdx} mean?`}
+                              value={level}
+                              onChange={(e) => updateScoreLevel(i, levelIdx, e.target.value)}
+                            />
+                            <button
+                              className="criteria-remove"
+                              type="button"
+                              aria-label={`Remove score level ${levelIdx}`}
+                              disabled={scoreLevels(q).length <= 2}
+                              onClick={() => removeScoreLevel(i, levelIdx)}
+                            >×</button>
+                          </div>
+                        ))}
+                      </div>
+                      <button
+                        className="criteria-add"
+                        type="button"
+                        disabled={scoreLevels(q).length >= MAX_SCORE_LEVELS}
+                        onClick={() => addScoreLevel(i)}
+                      >+ Add level</button>
+                    </>
+                  )}
                 </div>
               </div>
             ))}
@@ -379,7 +520,7 @@ export default function Playground() {
           <div className="ans-list">
             {exhausted && (
               <div className="ans-card" style={{ textAlign: "center", padding: "32px 20px" }}>
-                <div style={{ fontSize: "1.2rem", fontWeight: 700, marginBottom: 8 }}>You've used all 5 free runs</div>
+                <div style={{ fontSize: "1.2rem", fontWeight: 700, marginBottom: 8 }}>You&apos;ve used all 5 free runs</div>
                 <p style={{ color: "var(--muted)", fontSize: "0.9rem", marginBottom: 16 }}>
                   Upgrade to Pro for unlimited runs and saved history.
                 </p>
@@ -395,7 +536,7 @@ export default function Playground() {
             )}
             {!answers && !error && !running && (
               <>
-                {(DEMO_ANSWERS[scenario.key]?.answers
+                {(!questionsEdited && DEMO_ANSWERS[scenario.key]?.answers
                   ? questions.map((q) => {
                       const a = DEMO_ANSWERS[scenario.key].answers?.[q.id];
                       if (!a) return null;
@@ -405,7 +546,9 @@ export default function Playground() {
                     })
                   : null)}
                 <p style={{ textAlign: "center", color: "var(--muted)", fontSize: "0.8rem", marginTop: 12 }}>
-                  ← Example results. Press Run Jev to get real answers.
+                  {questionsEdited
+                    ? "Your questions have changed. Run Jev to see answers for your definitions."
+                    : "← Example results. Press Run Jev to get real answers."}
                 </p>
               </>
             )}

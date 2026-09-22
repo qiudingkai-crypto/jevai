@@ -7,8 +7,10 @@ export interface QuestionDef {
   id: string;
   type: QuestionType;
   instructions: string;
-  // for choice: { label: description }
+  // Noul: { true, false }; Choice: { label: description }; Score: ordered levels.
   criteria?: Record<string, string> | string[];
+  // Editable choice rows preserve temporary blank/duplicate labels until validation.
+  choiceOptions?: Array<{ label: string; description: string }>;
 }
 
 export interface Scenario {
@@ -65,7 +67,7 @@ export const SCENARIOS: Scenario[] = [
         id: "fit",
         type: "score",
         instructions: "How well does the scope match my portfolio? (0–5)",
-        criteria: ["Poor fit", "", "", "", "", "Strong fit"],
+        criteria: ["No relevant work", "Major skill gaps", "Some overlap, important gaps", "Most requirements match", "Strong match with similar work", "Direct match with proven examples"],
       },
       {
         id: "risk",
@@ -90,7 +92,7 @@ export const SCENARIOS: Scenario[] = [
         id: "relevance",
         type: "score",
         instructions: "How relevant are the past projects? (0–5)",
-        criteria: ["Not relevant", "", "", "", "", "Directly relevant"],
+        criteria: ["Unrelated projects", "Weakly related projects", "Some relevant work", "Mostly relevant work", "Closely similar projects", "Directly comparable successful projects"],
       },
       {
         id: "next",
@@ -132,7 +134,7 @@ export const SCENARIOS: Scenario[] = [
         id: "impact",
         type: "score",
         instructions: "How high is the business impact? (0–5)",
-        criteria: ["Low impact", "", "", "", "", "Critical"],
+        criteria: ["No meaningful impact", "Minor inconvenience", "Limited disruption", "Noticeable disruption", "Major disruption", "Critical business impact"],
       },
     ],
   },
@@ -163,7 +165,7 @@ export const SCENARIOS: Scenario[] = [
         id: "frustration",
         type: "score",
         instructions: "How frustrated is the customer? (0–5)",
-        criteria: ["Calm", "", "", "", "", "Very angry"],
+        criteria: ["Calm", "Slightly annoyed", "Frustrated", "Clearly upset", "Angry", "Very angry or threatening to leave"],
       },
     ],
   },
@@ -194,7 +196,7 @@ export const SCENARIOS: Scenario[] = [
         id: "toxicity",
         type: "score",
         instructions: "How toxic is the message? (0–5)",
-        criteria: ["Not toxic", "", "", "", "", "Severely toxic"],
+        criteria: ["Not toxic", "Slightly rude", "Hostile tone", "Personal insults", "Harassment", "Severely toxic or threatening"],
       },
     ],
   },
@@ -225,7 +227,7 @@ export const SCENARIOS: Scenario[] = [
         id: "urgency",
         type: "score",
         instructions: "How urgent is the request? (0–5)",
-        criteria: ["Not urgent", "", "", "", "", "Very urgent"],
+        criteria: ["Not urgent", "Can wait", "Needs attention soon", "Time-sensitive", "Urgent today", "Immediate action required"],
       },
     ],
   },
@@ -240,7 +242,7 @@ export const SCENARIOS: Scenario[] = [
         id: "severity",
         type: "score",
         instructions: "How severe is the negative signal? (0–5)",
-        criteria: ["Minor issue", "", "", "", "", "Severe churn risk"],
+        criteria: ["Minor issue", "Small inconvenience", "Repeated problem", "Serious frustration", "Likely to escalate", "Severe churn risk"],
       },
       {
         id: "issue_type",
@@ -271,7 +273,7 @@ export const SCENARIOS: Scenario[] = [
         id: "buying_intent",
         type: "score",
         instructions: "How strong is the buying intent? (0–5)",
-        criteria: ["Weak", "", "", "", "", "Very strong"],
+        criteria: ["No buying signal", "Weak interest", "Early exploration", "Clear need", "Active buying process", "Very strong intent to buy"],
       },
       {
         id: "timeline",
@@ -336,7 +338,7 @@ export const SCENARIOS: Scenario[] = [
         id: "match",
         type: "score",
         instructions: "How precise is the match between claim and source? (0–5)",
-        criteria: ["No match", "", "", "", "", "Exact match"],
+        criteria: ["No match", "Mostly unrelated", "Partial match", "Substantial match", "Close match", "Exact match"],
       },
       {
         id: "action",
@@ -377,7 +379,7 @@ export const SCENARIOS: Scenario[] = [
         id: "confidence",
         type: "score",
         instructions: "How confident are we in this decision? (0–5)",
-        criteria: ["Not confident", "", "", "", "", "Very confident"],
+        criteria: ["Not confident", "Very uncertain", "Somewhat uncertain", "Moderately confident", "Confident", "Very confident"],
       },
     ],
   },
