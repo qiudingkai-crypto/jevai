@@ -33,6 +33,7 @@ export async function POST(req: NextRequest) {
     const checkoutSession = await client.checkout.createSession({
       productId,
       currency: "USD",
+      language: "en",
       buyerEmail: session.user.email,
       successUrl: `${process.env.NEXT_PUBLIC_APP_URL || "https://jev-ai.xyz"}/success`,
       metadata: {
