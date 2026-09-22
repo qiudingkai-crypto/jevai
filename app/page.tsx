@@ -113,7 +113,7 @@ function TopBarRight({ onOpenCheckIn }: { onOpenCheckIn: () => void }) {
     const h = () => refresh();
     window.addEventListener("credits-updated", h);
     return () => window.removeEventListener("credits-updated", h);
-  }, []);
+  }, [user]);
 
   if (!user) {
     return <button className="btn btn-primary btn-sm" onClick={() => signIn("google")}>Sign in</button>;
