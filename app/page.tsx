@@ -1,11 +1,220 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import HeroAnimation from "./components/HeroAnimation";
 import Playground from "./components/Playground";
-import CheckInWidget from "./components/CheckInWidget";
 import { FAQS } from "@/lib/scenarios";
 import { signIn, signOut, useSession } from "next-auth/react";
+
+const REWARDS = [1, 1, 2, 2, 2, 3, 3];
+
+function CheckInModal({ onClose, onClaimed }: { onClose: () => void; onClaimed: () => void }) {
+  const [streak, setStreak] = useState(0);
+  const [claimed, setClaimed] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/checkin").then((r) => r.json()).then((d) => setStreak(d.streak || 0));
+  }, []);
+
+  async function claim() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/checkin", { method: "POST" });
+      const d = await res.json();
+      if (d.reward) {
+        setClaimed(d.reward);
+        setStreak(d.streak);
+        onClaimed();
+      }
+    } finally { setLoading(false); }
+  }
+
+  const canClaim = !claimed && streak < 7;
+
+  return (
+    <div onClick={onClose} style={{
+      position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
+      zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
+    }}>
+      <div onClick={(e) => e.stopPropagation()} style={{
+        background: "#fff", borderRadius: 24, padding: 32, maxWidth: 600, width: "100%",
+      }}>
+        <div style={{ textAlign: "center", marginBottom: 20 }}>
+          <h3 style={{ margin: 0, fontSize: "1.3rem", fontWeight: 700 }}>Daily Reward</h3>
+          <p style={{ color: "#888", marginTop: 4, fontSize: "0.9rem" }}>Sign in daily to claim credits</p>
+        </div>
+        {claimed !== null && (
+          <div style={{
+            textAlign: "center", marginBottom: 16, padding: 12,
+            background: "rgba(74,222,128,0.15)", borderRadius: 12,
+            color: "#16a34a", fontWeight: 700,
+          }}>+{claimed} credits claimed!</div>
+        )}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6, marginBottom: 20 }}>
+          {REWARDS.map((r, i) => {
+            const day = i + 1;
+            const got = day <= streak;
+            const isToday = day === streak + 1 && canClaim;
+            return (
+              <div key={i} style={{
+                background: got ? "rgba(74,222,128,0.12)" : isToday ? "rgba(0,0,0,0.04)" : "rgba(0,0,0,0.02)",
+                border: isToday ? "2px solid #16a34a" : "1px solid #e5e5e5",
+                borderRadius: 10, padding: "10px 4px", textAlign: "center",
+              }}>
+                <div style={{ fontSize: "0.65rem", color: "#999" }}>Day {day}</div>
+                <div style={{ fontSize: "0.95rem", fontWeight: 700, marginTop: 2 }}>+{r}</div>
+                <div style={{ fontSize: "0.6rem", color: "#999" }}>credits</div>
+                {got && <div style={{ fontSize: "0.7rem", color: "#16a34a" }}>✓</div>}
+              </div>
+            );
+          })}
+        </div>
+        {canClaim && (
+          <button onClick={claim} disabled={loading} style={{
+            width: "100%", padding: "12px", background: "#16a34a", color: "#fff",
+            border: "none", borderRadius: 12, fontWeight: 700, cursor: loading ? "wait" : "pointer",
+          }}>
+            {loading ? "Claiming..." : `Claim +${REWARDS[streak]} credits`}
+          </button>
+        )}
+        {!canClaim && !claimed && <div style={{ textAlign: "center", color: "#999" }}>Come back tomorrow!</div>}
+        {streak >= 7 && !claimed && <div style={{ textAlign: "center", color: "#16a34a", fontWeight: 600 }}>Reward completed!</div>}
+      </div>
+    </div>
+  );
+}
+
+function TopBarRight() {
+  const { data: session } = useSession();
+  const user = session?.user;
+  const [credits, setCredits] = useState<number | null>(null);
+  const [canCheckIn, setCanCheckIn] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [checkInOpen, setCheckInOpen] = useState(false);
+
+  async function refresh() {
+    if (!user) return;
+    try {
+      const [u, c] = await Promise.all([
+        fetch("/api/usage").then((r) => r.json()),
+        fetch("/api/checkin").then((r) => r.json()),
+      ]);
+      setCredits(u.credits ?? 0);
+      setCanCheckIn(c.canCheckIn ?? false);
+    } catch {}
+  }
+
+  useEffect(() => { refresh(); }, [user]);
+  useEffect(() => {
+    const h = () => refresh();
+    window.addEventListener("credits-updated", h);
+    return () => window.removeEventListener("credits-updated", h);
+  }, []);
+
+  if (!user) {
+    return <button className="btn btn-primary btn-sm" onClick={() => signIn("google")}>Sign in</button>;
+  }
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <button
+        onClick={() => canCheckIn && setCheckInOpen(true)}
+        style={{
+          display: "flex", alignItems: "center", gap: 6,
+          padding: "6px 12px", borderRadius: 999,
+          border: "1px solid var(--border)",
+          background: canCheckIn ? "var(--mint)" : "var(--paper-raised, #f5f5f5)",
+          color: canCheckIn ? "#000" : "var(--text)",
+          fontSize: "0.82rem", fontWeight: 600,
+          cursor: canCheckIn ? "pointer" : "default",
+        }}
+      >
+        <span>🎁</span>
+        <span>{canCheckIn ? "Daily reward" : "Checked in"}</span>
+      </button>
+
+      <div style={{
+        display: "flex", alignItems: "center", gap: 6,
+        padding: "6px 12px", borderRadius: 999,
+        border: "1px solid var(--border)",
+        background: "var(--paper-raised, #f5f5f5)",
+        fontSize: "0.82rem", fontWeight: 600,
+      }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v10M9 10h4.5a1.5 1.5 0 010 3H9" />
+        </svg>
+        {credits ?? "…"} credits
+      </div>
+
+      <div style={{ position: "relative" }}>
+        <button
+          onClick={() => setUserMenuOpen(!userMenuOpen)}
+          style={{
+            display: "flex", alignItems: "center", gap: 8,
+            padding: "4px 10px 4px 4px", borderRadius: 999,
+            border: "1px solid var(--border)",
+            background: "var(--paper-raised, #f5f5f5)",
+            cursor: "pointer",
+          }}
+        >
+          {user.image ? (
+            <img src={user.image} alt="" referrerPolicy="no-referrer" style={{ width: 28, height: 28, borderRadius: "50%" }} />
+          ) : (
+            <span style={{
+              width: 28, height: 28, borderRadius: "50%",
+              background: "var(--mint)", color: "#000",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontWeight: 700, fontSize: "0.85rem",
+            }}>{user.name?.[0] || "U"}</span>
+          )}
+          <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>
+            {user.name?.split(" ")[0] || user.email?.split("@")[0]}
+          </span>
+        </button>
+        {userMenuOpen && (
+          <div style={{
+            position: "absolute", top: "calc(100% + 8px)", right: 0,
+            background: "#fff", border: "1px solid var(--border)", borderRadius: 12,
+            boxShadow: "0 8px 24px rgba(0,0,0,0.1)", minWidth: 160, zIndex: 100, overflow: "hidden",
+          }}>
+            <button
+              onClick={() => { setUserMenuOpen(false); window.location.href = "/pricing"; }}
+              style={{
+                display: "flex", alignItems: "center", gap: 8,
+                width: "100%", padding: "12px 16px",
+                background: "none", border: "none", cursor: "pointer",
+                fontSize: "0.9rem", textAlign: "left",
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
+              </svg>
+              Account & Billing
+            </button>
+            <button
+              onClick={() => signOut()}
+              style={{
+                display: "flex", alignItems: "center", gap: 8,
+                width: "100%", padding: "12px 16px",
+                background: "none", border: "none", borderTop: "1px solid var(--border)",
+                cursor: "pointer", fontSize: "0.9rem", textAlign: "left",
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" />
+              </svg>
+              Sign out
+            </button>
+          </div>
+        )}
+      </div>
+
+      {checkInOpen && <CheckInModal onClose={() => setCheckInOpen(false)} onClaimed={refresh} />}
+    </div>
+  );
+}
 
 function BrandMark() {
   return (
@@ -62,23 +271,7 @@ export default function Home() {
             <a href="#faq">FAQ</a>
           </nav>
           <div className="topbar-cta">
-            {user ? (
-              <div className="user-menu">
-                {user.image ? (
-                  <img src={user.image} alt="" className="user-avatar" referrerPolicy="no-referrer" />
-                ) : (
-                  <span className="user-avatar user-avatar-fallback">{user.name?.[0] || "U"}</span>
-                )}
-                <span className="user-name">{user.name || user.email}</span>
-                <button className="btn btn-ghost btn-sm" onClick={() => signOut()}>
-                  Sign out
-                </button>
-              </div>
-            ) : (
-              <button className="btn btn-primary btn-sm" onClick={() => signIn("google")}>
-                Sign in
-              </button>
-            )}
+            <TopBarRight />
           </div>
         </div>
       </header>
@@ -295,7 +488,6 @@ export default function Home() {
           </span>
         </div>
       </footer>
-      <CheckInWidget />
     </>
   );
 }
