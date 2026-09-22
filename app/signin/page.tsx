@@ -47,7 +47,7 @@ export default function SignInPage() {
           onClick={() => signIn("google", { callbackUrl: "/" })}
           style={{
             width: "100%", padding: "12px", borderRadius: 12,
-            border: "1px solid #d1d5db", background: "#fff", background: "#fff",
+            border: "1px solid #d1d5db", background: "#fff",
             cursor: "pointer", fontSize: "0.95rem", fontWeight: 600,
             display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
             marginBottom: 16,
