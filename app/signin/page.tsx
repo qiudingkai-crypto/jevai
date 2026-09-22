@@ -47,7 +47,7 @@ export default function SignInPage() {
           onClick={() => signIn("google", { callbackUrl: "/" })}
           style={{
             width: "100%", padding: "12px", borderRadius: 12,
-            border: "1px solid var(--border)", background: "#fff",
+            border: "1px solid #d1d5db", background: "#fff", background: "#fff",
             cursor: "pointer", fontSize: "0.95rem", fontWeight: 600,
             display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
             marginBottom: 16,
@@ -76,7 +76,7 @@ export default function SignInPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
             style={{
-              padding: "12px", borderRadius: 12, border: "1px solid var(--border)",
+              padding: "12px", borderRadius: 12, border: "1px solid #d1d5db", background: "#fff",
               fontSize: "0.95rem", outline: "none",
             }}
           />
@@ -87,7 +87,7 @@ export default function SignInPage() {
             onChange={(e) => setPassword(e.target.value)}
             required
             style={{
-              padding: "12px", borderRadius: 12, border: "1px solid var(--border)",
+              padding: "12px", borderRadius: 12, border: "1px solid #d1d5db", background: "#fff",
               fontSize: "0.95rem", outline: "none",
             }}
           />
