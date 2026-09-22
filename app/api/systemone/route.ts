@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
-const FREE_RUNS = 5;
 const PRO_MONTHLY_RUNS = 1000;
 const MAX_TEXT_LEN = 50000;
 const UPSTREAM_TIMEOUT_MS = 30_000;
@@ -55,8 +54,7 @@ export async function POST(request: Request) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
-  // Only the first request in a UTC month resets the counter. Conditional
-  // updates below reserve one run atomically before contacting the model.
+  // Monthly reset for pro
   if (user.plan === "pro") {
     await prisma.user.updateMany({
       where: { id: userId, monthlyResetAt: { lt: monthStart } },
@@ -64,7 +62,9 @@ export async function POST(request: Request) {
     });
   }
 
-  let quotaType: "pro_monthly" | "credits" | "free" | null = null;
+  let quotaType: "pro_monthly" | "credits" | null = null;
+
+  // Try pro monthly first
   if (user.plan === "pro") {
     const reserved = await prisma.user.updateMany({
       where: {
@@ -78,6 +78,8 @@ export async function POST(request: Request) {
     });
     if (reserved.count) quotaType = "pro_monthly";
   }
+
+  // Fall back to credits
   if (!quotaType) {
     const reserved = await prisma.user.updateMany({
       where: { id: userId, credits: { gt: 0 } },
@@ -85,16 +87,10 @@ export async function POST(request: Request) {
     });
     if (reserved.count) quotaType = "credits";
   }
-  if (!quotaType) {
-    const reserved = await prisma.user.updateMany({
-      where: { id: userId, freeRunsUsed: { lt: FREE_RUNS } },
-      data: { freeRunsUsed: { increment: 1 } },
-    });
-    if (reserved.count) quotaType = "free";
-  }
+
   if (!quotaType) {
     return NextResponse.json(
-      { error: "You've run out of runs. Upgrade to Pro or buy credits.", code: "QUOTA_EXHAUSTED" },
+      { error: "You've run out of credits. Buy a pack to continue.", code: "QUOTA_EXHAUSTED" },
       { status: 403 }
     );
   }
@@ -128,7 +124,6 @@ export async function POST(request: Request) {
           outputTokens: data.usage?.output_tokens ?? null,
         },
       });
-
       completed = true;
     }
     result = NextResponse.json(data, { status: res.status });
@@ -150,12 +145,9 @@ export async function POST(request: Request) {
           });
         } else if (quotaType === "credits") {
           await prisma.user.update({ where: { id: userId }, data: { credits: { increment: 1 } } });
-        } else {
-          await prisma.user.update({ where: { id: userId }, data: { freeRunsUsed: { decrement: 1 } } });
         }
       } catch (err) {
         console.error("[Jev] Failed to release a reserved run:", err);
-        result = NextResponse.json({ error: "Quota reconciliation failed. Please contact support." }, { status: 500 });
       }
     }
   }
